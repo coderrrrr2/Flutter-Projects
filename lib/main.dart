@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
+import 'dart:developer';
 
 void main() {
   runApp(
     const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Directionality(
-        textDirection: TextDirection.ltr,
-        child: SimpleCalculator(),
-      ),
+      home: SimpleCalculator(),
     ),
   );
 }
@@ -22,19 +20,19 @@ class SimpleCalculator extends StatefulWidget {
 class _SimpleCalculatorState extends State<SimpleCalculator> {
   buttonPressHandler btnpress = buttonPressHandler();
   Widget calcButton(String btntxt, Color btncolor, Color txtcolor, String btn) {
-    // ignore: avoid_unnecessary_containers
+// ignore: avoid_unnecessary_containers
     return Container(
       child: SingleChildScrollView(
         child: ElevatedButton(
           onPressed: () {
             setState(() {
-              btnpress.btnvalue = btn;
+              btnpress.btnValue = btn;
             });
           },
           style: ElevatedButton.styleFrom(
             shape: const CircleBorder(),
             backgroundColor: btncolor,
-            padding: const EdgeInsets.all(30),
+            padding: const EdgeInsets.all(27),
           ),
           child: Text(
             btntxt,
@@ -91,11 +89,11 @@ class _SimpleCalculatorState extends State<SimpleCalculator> {
                           '+/-',
                           const Color.fromARGB(237, 212, 212, 212),
                           Colors.black,
-                          "-"),
+                          "+-"),
                       calcButton('%', const Color.fromARGB(237, 212, 212, 212),
                           Colors.black, "%"),
-                      calcButton('/', const Color.fromARGB(252, 247, 161, 1),
-                          Colors.white, "/"),
+                      calcButton('÷ ', const Color.fromARGB(252, 247, 161, 1),
+                          Colors.white, "÷ "),
                     ],
                   ),
                   Row(
@@ -146,7 +144,7 @@ class _SimpleCalculatorState extends State<SimpleCalculator> {
                       ElevatedButton(
                         onPressed: () {
                           setState(() {
-                            btnpress.btnvalue = "0";
+                            btnpress.btnValue = "0";
                           });
                         },
                         style: ElevatedButton.styleFrom(
@@ -177,47 +175,76 @@ class _SimpleCalculatorState extends State<SimpleCalculator> {
 
 // ignore: camel_case_types
 class buttonPressHandler {
-  String btnvalue = "";
+  String btnValue = "";
   int outputCount = 0;
   double fontSize = 100;
   String setValue = "";
-  String btnVal = "";
-  String firstVal = "";
+  double operationAnswer = 0;
+  String previousValue = "";
+  String operation = "";
   String buttonPress() {
-    if (btnvalue == "AC") {
+    if (btnValue == "AC") {
       outputCount = 0;
       fontSize = 100;
       setValue = "";
-      btnvalue = "";
+      btnValue = "";
+      operationAnswer = 0;
+      operation = "";
       return "0";
+    }
+    if (btnValue.isNotEmpty) {
+      outputCount += 1;
+    } else {
+      return "0";
+    }
+    if (btnValue == "=") {
+      if (operation == "+") {
+        operationAnswer = double.parse(previousValue) + double.parse(setValue);
+      }
+      if (operation == "-") {
+        operationAnswer = double.parse(previousValue) - double.parse(setValue);
+      }
+      if (operation == "x") {
+        operationAnswer = double.parse(previousValue) * double.parse(setValue);
+      }
+      if (operation == "+") {
+        operationAnswer = double.parse(previousValue) / double.parse(setValue);
+      }
+      if (operation != "+") {
+        setValue = operationAnswer.toInt().toString();
+        operation = "";
+        previousValue = "";
+        return setValue;
+      } else {
+        setValue = operationAnswer.toString();
+        operation = "";
+        previousValue = "";
+        return setValue;
+      }
+    }
+    if (btnValue == '+' ||
+        btnValue == '-' ||
+        btnValue == 'x' ||
+        btnValue == '÷ ' ||
+        btnValue == '=' ||
+        btnValue == "+-") {
+      if (btnValue == "+-") {
+        previousValue = "-$setValue";
+      }
+      previousValue = setValue;
+      operation = btnValue;
+      log(btnValue);
+      setValue = "";
+      return "";
+    }
+    if (outputCount < 11) {
+      setValue += btnValue;
+      log("setvalue $setValue");
+      if (outputCount > 5) {
+        fontSize -= 7;
+      }
     }
 
-    if (setValue == "0" && btnvalue != "") {
-      return "0";
-    }
-    if (btnvalue.isNotEmpty) {
-      outputCount += 1;
-    }
-    if (outputCount > 0) {
-      if (outputCount < 10) {
-        if (outputCount % 3 == 0 && outputCount < 9) {
-          btnvalue += ",";
-        }
-        setValue += btnvalue;
-        if (outputCount < 9 && outputCount > 5) {
-          fontSize -= 12;
-        }
-      }
-      if (btnvalue == "+") {
-        firstVal = setValue;
-        btnVal = btnvalue;
-        print("first val is $firstVal");
-        print("btnval is $btnVal");
-        btnvalue = "";
-        setValue = "";
-      }
-    }
-    String newSetValue = setValue.replaceAll(",", "");
     return setValue;
   }
 }
